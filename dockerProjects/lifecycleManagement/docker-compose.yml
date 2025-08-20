@@ -1,0 +1,30 @@
+version: '3'
+services:
+  app:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: ngnixproxymanager_app
+    restart: always
+    ports:
+      - "8882:80"
+      - "8884:81"
+      - "8845:443"
+    environment:
+      DB_TYPE: "postgres"
+      DB_HOST: "${POSTGRES_HOST}"
+      DB_PORT: "${POSTGRES_PORT}"
+      DB_USER: "${POSTGRES_USER}"
+      DB_PASSWORD: "${POSTGRES_PASSWORD}"
+      DB_NAME: "${POSTGRES_DB}"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # URL'in sonundan '&delay=2s' kısmını kaldırın
+      - WATCHTOWER_NOTIFICATION_URL=smtp://${GMAIL_USER}:${GMAIL_APP_PASSWORD}@smtp.gmail.com:587/?from=${GMAIL_USER}&to=${MAIL_TO}
+      # Gecikme ayarını ayrı bir değişken olarak buraya ekleyin
+      - WATCHTOWER_NOTIFICATION_DELAY=2
+    command: --interval 10 --cleanup
